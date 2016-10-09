@@ -80,52 +80,57 @@ class Factor(object):
 
 
 def debug(func):
-    def _debug(tokens):
-        if isDebug: print func.func_name, tokens, "start"
-        a, b = func(tokens)
-        if isDebug: print func.func_name, tokens, "end"
-        return a, b
+    def _debug(self):
+        if isDebug: print func.func_name, self.lexer.getRemains(), "start"
+        ret = func(self)
+        if isDebug: print func.func_name, self.lexer.getRemains(), "end"
+        return ret
     return _debug
 
 
-
-@debug
-def matchFactor(tokens):
-    token = tokens[0]
-    if isinstance(token, IntToken):
-        return Factor(token), tokens[1:]
-    elif isinstance(token, LeftBracketToken):
-        expr, tokens = matchExpr(tokens[1:])
-        return Factor(expr), tokens[1:]
-    else:
-        raise Exception(token)
-@debug
-def matchTerm2(tokens):
-    if tokens == None or len(tokens) == 0:
-        return None, None
-    token = tokens[0]
-    if not isinstance(token, MultiplyToken):
-        return None, tokens
-    term2, tokens = matchTerm(tokens[1:])
-    return Term2(token, term2), tokens
-@debug
-def matchTerm(tokens):
-    factor, tokens = matchFactor(tokens)
-    term2, tokens = matchTerm2(tokens)
-    return Term(factor, term2), tokens
-@debug
-def matchExpr2(tokens):
-    if tokens == None or len(tokens) == 0:
-        return None, None
-    token = tokens[0]
-    if not isinstance(token, AddToken):
-        return None, tokens
-    term, tokens = matchExpr(tokens[1:])
-    return Expr2(token, term), tokens
-@debug
-def matchExpr(tokens):
-    term, tokens = matchTerm(tokens)
-    expr2, tokens = matchExpr2(tokens)
-    return Expr(term, expr2), tokens
+class Parser(object):
+    def __init__(self, lexer):
+        self.lexer = lexer
+    @debug
+    def matchFactor(self):
+        token = self.lexer.nextToken() 
+        if isinstance(token, IntToken):
+            return Factor(token)
+        elif isinstance(token, LeftBracketToken):
+            expr = self.matchExpr()
+            self.lexer.nextToken()
+            return Factor(expr)
+        else:
+            raise Exception(token)
+    @debug
+    def matchTerm2(self):
+        token = self.lexer.nextToken()
+        if token == None:
+            return None
+        if not isinstance(token, MultiplyToken):
+            self.lexer.back()
+            return None
+        term = self.matchTerm()
+        return Term2(token, term)
+    @debug
+    def matchTerm(self):
+        factor = self.matchFactor()
+        term2 = self.matchTerm2()
+        return Term(factor, term2)
+    @debug
+    def matchExpr2(self):
+        token = self.lexer.nextToken()
+        if token == None:
+            return None
+        if not isinstance(token, AddToken):
+            self.lexer.back()
+            return None
+        expr = self.matchExpr()
+        return Expr2(token, expr)
+    @debug
+    def matchExpr(self):
+        term = self.matchTerm()
+        expr2 = self.matchExpr2()
+        return Expr(term, expr2)
 
 

@@ -11,8 +11,17 @@ if __name__ == '__main__':
         print '************************************'
         print 'Raw line:' + instr
         print 'Correct result:%d' % eval(instr)
-        tokens = Lexer(instr).getTokens()
-        print 'Lexer result: ', tokens
-        expr, tokens = matchExpr(tokens)
+        lexer = Lexer(instr)
+        print 'Lexer result: ',
+        while True:
+            token = lexer.nextToken()
+            if token != None:
+                print token,
+            else:
+                break
+        print
+        lexer.reset()
+        parser = Parser(lexer)
+        expr = parser.matchExpr()
         print 'Parser result: ', expr
         print 'Execute result:', expr.calc()

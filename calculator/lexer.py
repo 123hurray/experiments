@@ -17,6 +17,11 @@ class MultiplyToken(object):
 class Lexer(object):
     def __init__(self, text):
         self.instr = text
+        self.backup = text
+        self.lastTokenValid = False
+    def reset(self):
+        self.instr = self.backup
+        self.lastTokenValid = False
     @staticmethod
     def isInt(string):
         try:
@@ -24,39 +29,47 @@ class Lexer(object):
             return True
         except:
             return False
+    def getRemains(self):
+        if self.lastTokenValid:
+            return str(self.lastToken) + self.instr
+        return self.instr
+    def back(self):
+        self.lastTokenValid = True
 
-
-    def getTokens(self):
+    def nextToken(self):
+        if self.lastTokenValid:
+            self.lastTokenValid = False
+            return self.lastToken
         instr = self.instr
-        tokens = []
-        num = None
-        while instr != '':
-            if Lexer.isInt(instr[0]):
-                if num == None:
-                    num = 0
-                num = num * 10 + int(instr[0])
-                instr = instr[1:]
-                continue
-            elif num != None:
-                tokens.append(IntToken(num))
-                num = None
-                
-            if instr[0] == '(':
-                tokens.append(LeftBracketToken())
-                instr = instr[1:]
-            elif instr[0] == ')':
-                tokens.append(RightBracketToken())
-                instr = instr[1:]
-            elif instr[0] == '+':
-                tokens.append(AddToken())
-                instr = instr[1:]
-            elif instr[0] == '*':
-                tokens.append(MultiplyToken())
-                instr = instr[1:]
-            else:
-                raise Exception()
-        if num != None:
-            tokens.append(IntToken(num))
-        return tokens
+        if instr == '':
+            return None
+        instr = instr.strip()
+      
+        if Lexer.isInt(instr[0]):
+            i = 0
+            num = 0
+            while i < len(instr) and Lexer.isInt(instr[i]):
+                num = num * 10 + int(instr[i])
+                i += 1
+            self.instr = instr[i:]
+            token = IntToken(num)
+        
+        elif instr[0] == '(':
+            self.instr = instr[1:]
+            token = LeftBracketToken()
+        elif instr[0] == ')':
+            self.instr = instr[1:]
+            token = RightBracketToken()
+        elif instr[0] == '+':
+            self.instr = instr[1:]
+            token = AddToken()
+        elif instr[0] == '*':
+            self.instr = instr[1:]
+            token = MultiplyToken()
+        else:
+            raise Exception(instr)
+        self.lastToken = token
+        return token
+
 
 
