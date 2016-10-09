@@ -10,7 +10,10 @@ if __name__ == '__main__':
             break
         print '************************************'
         print 'Raw line:' + instr
-        print 'Correct result:%d' % eval(instr)
+        try:
+            print 'Correct result: %d' % eval(instr)
+        except:
+            print 'Syntax error'
         lexer = Lexer(instr)
         print 'Lexer result: ',
         while True:
@@ -22,6 +25,8 @@ if __name__ == '__main__':
         print
         lexer.reset()
         parser = Parser(lexer)
-        expr = parser.matchExpr()
+        expr = parser.match()
+        if expr == None:
+           break 
         print 'Parser result: ', expr
         print 'Execute result:', expr.calc()

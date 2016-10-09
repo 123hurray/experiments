@@ -11,9 +11,15 @@ class IntToken(int):
 class AddToken(object):
     def __repr__(self):
         return '+'
+class MinusToken(object):
+    def __repr__(self):
+        return '-'
 class MultiplyToken(object):
     def __repr__(self):
         return '*'
+class DivToken(object):
+    def __repr__(self):
+        return '/'
 class Lexer(object):
     def __init__(self, text):
         self.instr = text
@@ -66,6 +72,12 @@ class Lexer(object):
         elif instr[0] == '*':
             self.instr = instr[1:]
             token = MultiplyToken()
+        elif instr[0] == '-':
+            self.instr = instr[1:]
+            token = MinusToken()
+        elif instr[0] == '/':
+            self.instr = instr[1:]
+            token = DivToken()
         else:
             raise Exception(instr)
         self.lastToken = token
